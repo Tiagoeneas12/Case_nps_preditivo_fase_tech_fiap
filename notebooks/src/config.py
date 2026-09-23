@@ -1,17 +1,17 @@
 from pathlib import Path
 
 
-PASTA_PROJETO = Path(__file__).resolve().parents[2]
+PROJECT_FOLDER = Path(__file__).resolve().parents[2]
 
-PASTA_DADOS = PASTA_PROJETO / "dados"
+DATA_FOLDER = PROJECT_FOLDER / "data"
 
-# coloque abaixo o caminho para os arquivos de dados de seu projeto
-DADOS_ORIGINAIS = PASTA_DADOS / "breast-cancer.csv"
-DADOS_LIMPOS = PASTA_DADOS / "breast-cancer-clean.parquet"
+# Path to the project's data files
+RAW_DATA = DATA_FOLDER / "raw" / "desafio_nps_fase_1.csv"
+CLEAN_DATA = DATA_FOLDER / "processed" /  "base_nps.parquet"
 
-# coloque abaixo o caminho para os arquivos de modelos de seu projeto
-PASTA_MODELOS = PASTA_PROJETO / "modelos"
+# Path to the project's model files
+MODELS_FOLDER = PROJECT_FOLDER / "models"
 
-# coloque abaixo outros caminhos que você julgar necessário
-PASTA_RELATORIOS = PASTA_PROJETO / "relatorios"
-PASTA_IMAGENS = PASTA_RELATORIOS / "imagens"
+# Other project paths
+REPORTS_FOLDER = PROJECT_FOLDER / "reports"
+IMAGES_FOLDER = REPORTS_FOLDER / "images"
