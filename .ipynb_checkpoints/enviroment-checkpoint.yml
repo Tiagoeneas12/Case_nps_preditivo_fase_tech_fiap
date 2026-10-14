@@ -1,0 +1,54 @@
+name: machine_learning
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  # Python
+  - python=3.11
+
+  # Ciência de Dados
+  - pandas
+  - numpy
+  - scipy
+
+  # Machine Learning
+  - scikit-learn
+  - xgboost
+  - lightgbm
+
+  # Visualização
+  - matplotlib
+  - seaborn
+  - plotly
+
+  # Jupyter
+  - jupyter
+  - notebook
+  - ipykernel
+
+  # Streamlit
+  - streamlit
+
+  # Manipulação de dados
+  - openpyxl
+  - pyarrow
+  - fastparquet
+
+  # Geo
+  - geopandas
+  - shapely
+  - pyproj
+  - folium
+
+  # Utilidades
+  - joblib
+  - requests
+  - pip
+
+  # Pip packages
+  - pip:
+      - streamlit-folium
+      - category-encoders
+      - optuna
