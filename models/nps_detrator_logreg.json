@@ -1,0 +1,24 @@
+{
+  "nome": "nps_detrator_logreg",
+  "versao": "1.0.0",
+  "descricao": "Regressão logística (class_weight=balanced) que estima a probabilidade de o cliente ser detrator (nota_nps <= 6,5).",
+  "features": [
+    "delivery_delay_days",
+    "complaints_count",
+    "customer_service_contacts",
+    "resolution_time_days"
+  ],
+  "alvo": "detrator (nps_score <= 6.5)",
+  "limiar_decisao": 0.5,
+  "metricas_teste": {
+    "roc_auc": 0.8768,
+    "recall_detrator": 0.8127,
+    "precisao_detrator": 0.9413,
+    "recall_nao_detrator": 0.7959
+  },
+  "linhas_treino": 2465,
+  "treinado_em": "2026-10-15T00:43:56+00:00",
+  "random_state": 42,
+  "python": "3.11.16",
+  "scikit_learn": "1.9.1"
+}
