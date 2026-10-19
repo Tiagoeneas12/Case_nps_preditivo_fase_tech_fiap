@@ -5,7 +5,7 @@ O que ela faz
 -------------
 1. Exibe os dados: base tratada, resumo do NPS e os insights da EDA.
 2. Serve o modelo: recebe os indicadores operacionais de um pedido e devolve a
-   probabilidade de o cliente ser DETRATOR (nota de NPS <= 6,5) antes de ele
+   probabilidade de o cliente ser DETRATOR (nota de NPS de 0 a 6) antes de ele
    responder a pesquisa.
 
 Como rodar (na raiz do projeto)
@@ -122,7 +122,7 @@ app = FastAPI(
     description=(
         "Exibe os dados tratados e os insights da análise exploratória e serve o "
         "modelo que estima a probabilidade de um cliente ser **detrator** "
-        "(nota de NPS ≤ 6,5) antes da pesquisa de satisfação."
+        "(nota de NPS de 0 a 6) antes da pesquisa de satisfação."
     ),
     version="1.0.0",
     lifespan=lifespan,
@@ -331,7 +331,7 @@ def resumo(request: Request):
             c: round(float(v) * 100, 1)
             for c, v in df.groupby("nps_categoria")["repeat_purchase_30d"].mean().items()
         },
-        "observacao": "Categorias: detrator <= 6,5 | neutro > 6,5 e <= 8,5 | promotor > 8,5.",
+        "observacao": "Faixas do NPS: detrator 0 a 6 | neutro 7 e 8 | promotor 9 e 10.",
     }
 
 

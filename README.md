@@ -88,11 +88,11 @@ Resposta:
 
 - **Classe:** "detrator" quando a probabilidade chega ao corte. O corte padrão é 0,5, o mesmo que foi salvo junto do modelo. Para mudar em uma chamada, use `?corte=0.8`.
 - **Nível de risco:** baixo (abaixo de 40%), médio (de 40% a 70%) e alto (acima de 70%).
-- **Definição de detrator:** nota de NPS até 6,5. Neutro vai até 8,5 e promotor é acima disso.
+- **Faixas do NPS:** detrator de 0 a 6, neutro 7 e 8, promotor 9 e 10.
 - **Modelo:** regressão logística com `class_weight="balanced"`. As variáveis de entrada são `delivery_delay_days`, `complaints_count`, `customer_service_contacts` e `resolution_time_days`. Ficaram de fora `repeat_purchase_30d` e `csat_internal_score`, para evitar vazamento de informação.
 
 ### Limitações
 
 - O modelo mostra associação, não causa.
 - A previsão só vale para clientes que respondem à pesquisa de NPS, então pode haver viés de seleção.
-- Os números da API usam a base tratada (2.465 linhas) e a regra de detrator até 6,5. Por isso diferem dos de materiais que usaram a base bruta com a regra abaixo de 7.g
+- Os números da API usam a base tratada (2.465 linhas) e as faixas do NPS acima. Por isso diferem dos de materiais que usaram a base bruta com a regra abaixo de 7.
