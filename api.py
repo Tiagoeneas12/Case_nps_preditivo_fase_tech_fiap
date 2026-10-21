@@ -380,6 +380,21 @@ def correlacoes(request: Request):
 
 
 # ---- Modelo ---------------------------------------------------------------
+def metadados_para_exibir(metadados: dict) -> dict | None:
+    """Metadados do .joblib com a definição de detrator escrita como faixa do NPS (0 a 6)."""
+    if not metadados:
+        return None
+    exibir = dict(metadados)
+    exibir["alvo"] = "detrator (nota de NPS de 0 a 6)"
+    if isinstance(exibir.get("descricao"), str):
+        exibir["descricao"] = (
+            exibir["descricao"]
+            .replace("(nota_nps <= 6,5)", "(nota de NPS de 0 a 6)")
+            .replace("(nps_score <= 6.5)", "(nota de NPS de 0 a 6)")
+        )
+    return exibir
+
+
 @app.get("/modelo", tags=["Modelo"])
 def info_modelo(request: Request):
     """Descreve o modelo carregado. Se for regressão logística, mostra o peso de cada fator."""
@@ -392,7 +407,7 @@ def info_modelo(request: Request):
         "pipeline": hasattr(modelo, "steps"),
         "variaveis_de_entrada": colunas,
         "corte_padrao": corte_efetivo(request, None),
-        "metadados": request.app.state.metadados or None,
+        "metadados": metadados_para_exibir(request.app.state.metadados),
     }
     if hasattr(final, "coef_") and len(colunas) == final.coef_.shape[-1]:
         coef = final.coef_[0]
