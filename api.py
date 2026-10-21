@@ -4,13 +4,12 @@ API do Case NPS Preditivo (Tech Challenge - Fase 1).
 O que ela faz
 -------------
 1. Exibe os dados: base tratada, resumo do NPS e os insights da EDA.
-2. Serve o modelo: recebe os indicadores operacionais de um pedido e devolve a
-   probabilidade de o cliente ser DETRATOR (nota de NPS de 0 a 6) antes de ele
-   responder a pesquisa.
+2. Descreve o modelo que estima a probabilidade de o cliente ser DETRATOR
+   (nota de NPS de 0 a 6) antes de ele responder a pesquisa.
 
 Como rodar (na raiz do projeto)
 -------------------------------
-    pip install fastapi uvicorn
+    pip install fastapi uvicorn pandas scikit-learn joblib
     uvicorn api:app --reload
 
 Documentação interativa (Swagger): http://127.0.0.1:8000/docs
@@ -19,7 +18,7 @@ Configuração opcional por variável de ambiente
 ----------------------------------------------
     NPS_MODEL_PATH  caminho de um .joblib específico (padrão: o .joblib mais
                     recente dentro de models/)
-    NPS_CORTE       ponto de corte padrão da probabilidade (padrão: 0.5)
+    NPS_CORTE       ponto de corte informado em GET /modelo (padrão: o salvo no modelo, 0.5)
 """
 
 from __future__ import annotations
@@ -33,7 +32,6 @@ import joblib
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query, Request
-from pydantic import BaseModel, ConfigDict, Field
 
 # --------------------------------------------------------------------------
 # Caminhos e constantes
@@ -92,7 +90,7 @@ async def lifespan(app: FastAPI):
         df["nps_categoria"] = categoriza_nps(df["nps_score"])
         app.state.df = df
 
-    # Modelo treinado (.joblib). Se ainda não existir, só a predição fica indisponível.
+    # Modelo treinado (.joblib). Se ainda não existir, só o GET /modelo fica indisponível.
     app.state.modelo = None
     app.state.modelo_path = None
     app.state.metadados = {}
@@ -120,7 +118,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="API - Case NPS Preditivo",
     description=(
-        "Exibe os dados tratados e os insights da análise exploratória e serve o "
+        "Exibe os dados tratados e os insights da análise exploratória e descreve o "
         "modelo que estima a probabilidade de um cliente ser **detrator** "
         "(nota de NPS de 0 a 6) antes da pesquisa de satisfação."
     ),
@@ -160,85 +158,11 @@ def limpa_json(df: pd.DataFrame) -> list[dict]:
     return df.astype(object).where(df.notna(), None).to_dict(orient="records")
 
 
-# --------------------------------------------------------------------------
-# Esquemas de entrada e saída da predição
-# --------------------------------------------------------------------------
-class PedidoEntrada(BaseModel):
-    """Indicadores operacionais de um pedido, disponíveis antes da pesquisa de NPS."""
-
-    model_config = ConfigDict(
-        json_schema_extra={
-            "example": {
-                "delivery_delay_days": 3,
-                "complaints_count": 2,
-                "customer_service_contacts": 1,
-                "resolution_time_days": 4,
-            }
-        }
-    )
-
-    delivery_delay_days: float = Field(ge=0, le=60, description="Dias de atraso na entrega.")
-    complaints_count: int = Field(ge=0, le=100, description="Reclamações registradas.")
-    customer_service_contacts: int = Field(ge=0, le=100, description="Contatos com o atendimento.")
-    resolution_time_days: float = Field(ge=0, le=365, description="Dias para resolver o problema.")
-
-
-class PredicaoSaida(BaseModel):
-    probabilidade_detrator: float = Field(description="Probabilidade (0 a 1) de o cliente ser detrator.")
-    classe: Literal["detrator", "nao_detrator"] = Field(description="Classe pelo ponto de corte.")
-    corte_usado: float
-    nivel_risco: Literal["baixo", "medio", "alto"]
-
-
-def nivel_de_risco(probabilidade: float) -> str:
-    if probabilidade >= 0.7:
-        return "alto"
-    if probabilidade >= 0.4:
-        return "medio"
-    return "baixo"
-
-
-def corte_efetivo(request: Request, corte: float | None) -> float:
-    """Ordem: valor passado na chamada (?corte=) > variável NPS_CORTE > limiar salvo no modelo > 0,5."""
-    if corte is not None:
-        return corte
+def corte_efetivo(request: Request) -> float:
+    """Ponto de corte padrão do modelo: NPS_CORTE > limiar salvo no .joblib > 0,5."""
     if "NPS_CORTE" in os.environ:
         return CORTE_PADRAO
     return float(request.app.state.metadados.get("limiar_decisao", CORTE_PADRAO))
-
-
-def calcula_predicoes(request: Request, pedidos: list[PedidoEntrada], corte: float | None) -> list[PredicaoSaida]:
-    modelo = pega_modelo(request)
-    colunas = colunas_do_modelo(modelo)
-
-    X = pd.DataFrame([p.model_dump() for p in pedidos])
-    faltando = [c for c in colunas if c not in X.columns]
-    if faltando:
-        raise HTTPException(
-            status_code=500,
-            detail=(
-                f"O modelo carregado espera as colunas {colunas}, mas a API só recebe {FEATURES}. "
-                f"Faltam: {faltando}. Ajuste FEATURES e PedidoEntrada em api.py."
-            ),
-        )
-    X = X[colunas]
-    corte = corte_efetivo(request, corte)
-
-    # Coluna da classe positiva (1 = detrator)
-    classes = list(getattr(modelo, "classes_", [0, 1]))
-    if 1 not in classes:
-        raise HTTPException(status_code=500, detail=f"O modelo não tem a classe 1 (detrator): classes={classes}.")
-    probas = modelo.predict_proba(X)[:, classes.index(1)]
-
-    return [
-        PredicaoSaida(
-            probabilidade_detrator=round(float(p), 4),
-            classe="detrator" if p >= corte else "nao_detrator",
-            corte_usado=corte,
-            nivel_risco=nivel_de_risco(float(p)),
-        )
-        for p in probas
-    ]
 
 
 # --------------------------------------------------------------------------
@@ -258,8 +182,6 @@ def raiz():
             "insight_por_variavel": "GET /insights/nps-por/{variavel}",
             "correlacoes": "GET /insights/correlacoes",
             "modelo": "GET /modelo",
-            "predicao": "POST /predict",
-            "predicao_em_lote": "POST /predict/lote",
         },
     }
 
@@ -406,7 +328,7 @@ def info_modelo(request: Request):
         "tipo": type(final).__name__,
         "pipeline": hasattr(modelo, "steps"),
         "variaveis_de_entrada": colunas,
-        "corte_padrao": corte_efetivo(request, None),
+        "corte_padrao": corte_efetivo(request),
         "metadados": metadados_para_exibir(request.app.state.metadados),
     }
     if hasattr(final, "coef_") and len(colunas) == final.coef_.shape[-1]:
@@ -426,27 +348,3 @@ def info_modelo(request: Request):
     elif hasattr(final, "feature_importances_") and len(colunas) == len(final.feature_importances_):
         info["importancias"] = {c: round(float(i), 3) for c, i in zip(colunas, final.feature_importances_)}
     return info
-
-
-@app.post("/predict", response_model=PredicaoSaida, tags=["Modelo"])
-def prediz(
-    pedido: PedidoEntrada,
-    request: Request,
-    corte: float | None = Query(None, ge=0, le=1, description="Probabilidade a partir da qual o cliente é classificado como detrator."),
-):
-    """Probabilidade de um pedido gerar um cliente detrator."""
-    return calcula_predicoes(request, [pedido], corte)[0]
-
-
-@app.post("/predict/lote", response_model=list[PredicaoSaida], tags=["Modelo"])
-def prediz_em_lote(
-    pedidos: list[PedidoEntrada],
-    request: Request,
-    corte: float | None = Query(None, ge=0, le=1),
-):
-    """Mesma predição para vários pedidos de uma vez (até 1.000)."""
-    if not pedidos:
-        raise HTTPException(status_code=422, detail="Envie ao menos um pedido.")
-    if len(pedidos) > 1000:
-        raise HTTPException(status_code=422, detail="Máximo de 1.000 pedidos por chamada.")
-    return calcula_predicoes(request, pedidos, corte)

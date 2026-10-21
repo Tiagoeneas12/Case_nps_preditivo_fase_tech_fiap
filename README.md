@@ -26,9 +26,9 @@ O tratamento está no notebook `notebooks/01-cleansing.ipynb`. Ele lê a base br
 
 ## API
 
-A API (`api.py`) foi feita com FastAPI. Ela mostra os dados tratados, traz os principais resultados da análise exploratória e entrega a probabilidade de um cliente ser **detrator** usando o modelo treinado.
+A API (`api.py`) foi feita com FastAPI. Ela mostra os dados tratados, traz os principais resultados da análise exploratória e descreve o modelo treinado que estima a probabilidade de um cliente ser **detrator**.
 
-> **Observação:** o desafio não pede uma API. Ela é um complemento para mostrar como o modelo poderia ser usado na prática.
+> **Observação:** o desafio não pede uma API. Ela é um complemento para consultar os dados e os resultados do projeto.
 
 ### Como rodar
 
@@ -44,7 +44,7 @@ A API (`api.py`) foi feita com FastAPI. Ela mostra os dados tratados, traz os pr
 
 A API lê dois arquivos do repositório:
 - `data/processed/desafio_nps_fase_1_clean.csv`: base tratada.
-- Em `models/`, o arquivo `.joblib` mais recente (hoje `nps_detrator_logreg.joblib`). Sem ele, só os endpoints de previsão ficam indisponíveis.
+- Em `models/`, o arquivo `.joblib` mais recente (hoje `nps_detrator_logreg.joblib`). Sem ele, só o `GET /modelo` fica indisponível.
 
 ### Endpoints
 
@@ -57,39 +57,13 @@ A API lê dois arquivos do repositório:
 | `GET /insights/nps-por/{variavel}` | NPS médio por `delivery_delay_days`, `complaints_count`, `customer_service_contacts`, `resolution_time_days` ou `customer_region` |
 | `GET /insights/correlacoes` | Correlação de cada variável numérica com o `nps_score` |
 | `GET /modelo` | Descreve o modelo e mostra o peso de cada variável |
-| `POST /predict` | Probabilidade de um cliente ser detrator, com a classe e o nível de risco |
-| `POST /predict/lote` | Mesma previsão para vários pedidos de uma vez (até 1.000) |
 
-### Exemplo de previsão
+### Sobre o modelo
 
-Enviar para `POST /predict`:
-
-```json
-{
-  "delivery_delay_days": 4,
-  "complaints_count": 5,
-  "customer_service_contacts": 3,
-  "resolution_time_days": 8
-}
-```
-
-Resposta:
-
-```json
-{
-  "probabilidade_detrator": 0.9839,
-  "classe": "detrator",
-  "corte_usado": 0.5,
-  "nivel_risco": "alto"
-}
-```
-
-### Como ler o resultado
-
-- **Classe:** "detrator" quando a probabilidade chega ao corte. O corte padrão é 0,5, o mesmo que foi salvo junto do modelo. Para mudar em uma chamada, use `?corte=0.8`.
-- **Nível de risco:** baixo (abaixo de 40%), médio (de 40% a 70%) e alto (acima de 70%).
+O `GET /modelo` mostra o modelo usado no projeto e o peso de cada variável:
+- **Modelo:** regressão logística com `class_weight="balanced"`, que estima a probabilidade de o cliente ser detrator.
+- **Variáveis de entrada:** `delivery_delay_days`, `complaints_count`, `customer_service_contacts` e `resolution_time_days`. Ficaram de fora `repeat_purchase_30d` e `csat_internal_score`, para evitar vazamento de informação.
 - **Faixas do NPS:** detrator de 0 a 6, neutro 7 e 8, promotor 9 e 10.
-- **Modelo:** regressão logística com `class_weight="balanced"`. As variáveis de entrada são `delivery_delay_days`, `complaints_count`, `customer_service_contacts` e `resolution_time_days`. Ficaram de fora `repeat_purchase_30d` e `csat_internal_score`, para evitar vazamento de informação.
 
 ### Limitações
 
