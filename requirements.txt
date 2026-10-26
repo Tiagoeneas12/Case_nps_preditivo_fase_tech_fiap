@@ -1,0 +1,19 @@
+# Recomendado: Python 3.11.x
+# Para instalar: python -m pip install -r requirements.txt
+
+# Dados e notebooks
+numpy
+pandas
+scipy
+matplotlib
+seaborn
+jupyterlab
+notebook
+ipykernel
+openpyxl
+
+# API e carregamento do modelo
+fastapi
+uvicorn[standard]
+joblib
+scikit-learn==1.9.1

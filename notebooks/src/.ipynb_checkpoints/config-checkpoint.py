@@ -7,7 +7,7 @@ DATA_FOLDER = PROJECT_FOLDER / "data"
 
 # Path to the project's data files
 RAW_DATA = DATA_FOLDER / "raw" / "desafio_nps_fase_1.csv"
-CLEAN_DATA = DATA_FOLDER / "processed" /  "base_nps.xlsx"
+CLEAN_DATA = DATA_FOLDER / "processed" /  "desafio_nps_fase_1_clean.csv"
 
 # Path to the project's model files
 MODELS_FOLDER = PROJECT_FOLDER / "models"
