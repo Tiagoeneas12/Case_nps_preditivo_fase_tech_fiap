@@ -34,7 +34,7 @@ As respostas devem apoiar a investigação e a priorização de oportunidades de
 
 1. **Tratamento de dados:** inspeção da base original, avaliação de valores ausentes, duplicidades, faixas e regras de negócio; registro das decisões de limpeza.
 2. **Análise exploratória (EDA):** análise da distribuição das variáveis, perfil dos clientes e pedidos, logística, atendimento e relações com o NPS. A versão consolidada está em `notebooks/02-eda-.ipynb`; os notebooks individuais permanecem em `notebooks/edas_auxiliares/` como material de referência.
-3. **Modelagem:** experimentos de classificação nos notebooks `03-model-01.ipynb` e `03-model-02.ipynb`, com abordagens distintas para comparar resultados.
+3. **Modelagem:** o modelo final está em `notebooks/03-model-.ipynb`; os experimentos que levaram a ele (com e sem pesos por classe) permanecem em `notebooks/modelos_auxiliares/` como material de referência.
 4. **Treinamento reproduzível:** o script `src/train_model.py` treina e salva o modelo utilizado pela API.
 5. **API demonstrativa:** a aplicação em `api.py`, construída com FastAPI, expõe rotas para consultar os dados, obter resumos e insights e solicitar previsões.
 
@@ -52,18 +52,19 @@ Case_nps_preditivo_fase_tech_fiap/
 │       └── desafio_nps_fase_1_clean.csv
 ├── models/
 │   ├── baseline_regressao_logistica.joblib
-│   ├── nps_detrator_logreg.joblib
-│   └── nps_detrator_logreg.json
+│   └── baseline_regressao_logistica.json
 ├── notebooks/
 │   ├── 01-cleansing.ipynb
 │   ├── 02-eda-.ipynb
-│   ├── 03-model-01.ipynb
-│   ├── 03-model-02.ipynb
+│   ├── 03-model-.ipynb
 │   ├── edas_auxiliares/
 │   │   ├── 02-felipe-eda.ipynb
 │   │   ├── 02-marcela-eda.ipynb
 │   │   ├── 02-thelson-eda.ipynb
 │   │   └── 02-tiago-eda.ipynb
+│   ├── modelos_auxiliares/
+│   │   ├── 03-model-01.ipynb
+│   │   └── 03-model-02.ipynb
 │   └── src/
 │       ├── __init__.py
 │       └── config.py
@@ -143,7 +144,7 @@ Abra `notebooks/02-eda-.ipynb` e execute as células em ordem. Esse é o noteboo
 
 ### 8.3 Modelagem exploratória
 
-Os notebooks `notebooks/03-model-01.ipynb` e `notebooks/03-model-02.ipynb` apresentam experimentos de modelagem distintos. Execute primeiro o tratamento de dados para garantir que a base processada exista.
+Abra `notebooks/03-model-.ipynb` e execute as células em ordem. Esse é o notebook do modelo final: alvo, variáveis, separação dos dados, escolha do modelo, avaliação e uso prático. Os arquivos de `notebooks/modelos_auxiliares/` preservam os experimentos (com e sem pesos por classe) e podem ser consultados como referência. Execute primeiro o tratamento de dados para garantir que a base processada exista.
 
 ## 9. Treinar o modelo da API
 
@@ -192,7 +193,7 @@ Consulte `/docs` para visualizar os parâmetros, os formatos de entrada e saída
 
 As métricas de classificação devem ser analisadas em conjunto, considerando o possível desequilíbrio entre classes e o custo de falsos positivos e falsos negativos. Para um problema de identificação de detratores, *recall* ajuda a avaliar quantos detratores foram encontrados, enquanto precisão indica quantas das previsões de detrator estavam corretas no conjunto avaliado. ROC-AUC pode complementar a avaliação da capacidade de ordenação do classificador.
 
-Os valores registrados em `models/nps_detrator_logreg.json` descrevem uma avaliação realizada durante o treinamento incluído no projeto; não garantem o mesmo desempenho em novos dados. Antes de qualquer uso operacional, seria necessário validar o modelo em dados representativos, revisar o ponto de corte e monitorar mudanças no comportamento dos clientes e nos processos.
+Os valores registrados em `models/baseline_regressao_logistica.json` descrevem uma avaliação realizada durante o treinamento incluído no projeto; não garantem o mesmo desempenho em novos dados. Antes de qualquer uso operacional, seria necessário validar o modelo em dados representativos, revisar o ponto de corte e monitorar mudanças no comportamento dos clientes e nos processos.
 
 ## 12. Limitações e cuidados
 

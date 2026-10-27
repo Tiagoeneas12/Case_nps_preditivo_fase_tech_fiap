@@ -1,7 +1,7 @@
 """Treina o modelo de risco de detrator e salva o artefato em models/ para uso na API.
 
-Reproduz a versão A do notebook 03-model-thelson-01 (regressão logística com
-class_weight="balanced"). Uso, a partir da raiz do projeto:
+Reproduz o modelo final do notebook 03-model- (regressão logística sem pesos
+por classe, com o corte escolhido na validação cruzada). Uso, a partir da raiz do projeto:
 
     python src/train_model.py
 """
@@ -23,12 +23,13 @@ from sklearn.preprocessing import StandardScaler
 RAIZ = Path(__file__).resolve().parents[1]
 CAMINHO_DADOS = RAIZ / "data" / "processed" / "desafio_nps_fase_1_clean.csv"
 PASTA_MODELOS = RAIZ / "models"
-NOME_MODELO = "nps_detrator_logreg"
-VERSAO_MODELO = "1.0.0"
+NOME_MODELO = "baseline_regressao_logistica"
+VERSAO_MODELO = "2.0.0"
 
 RANDOM_STATE = 42
 LIMIAR_NOTA_DETRATOR = 6.5
-LIMIAR_DECISAO = 0.5
+# Corte que equilibra o recall das duas classes na validação cruzada do treino (notebook 03-model-).
+LIMIAR_DECISAO = 0.79
 FEATURES = [
     "delivery_delay_days",
     "complaints_count",
@@ -51,7 +52,7 @@ def carregar_dados() -> tuple[pd.DataFrame, pd.Series, pd.Series]:
 def criar_modelo():
     return make_pipeline(
         StandardScaler(),
-        LogisticRegression(class_weight="balanced", max_iter=1000, random_state=RANDOM_STATE),
+        LogisticRegression(max_iter=1000, random_state=RANDOM_STATE),
     )
 
 
@@ -79,7 +80,7 @@ def main() -> None:
     metadados = {
         "nome": NOME_MODELO,
         "versao": VERSAO_MODELO,
-        "descricao": "Regressão logística (class_weight=balanced) que estima a "
+        "descricao": "Regressão logística (sem pesos por classe) que estima a "
                      "probabilidade de o cliente ser detrator (nota_nps <= 6,5).",
         "features": FEATURES,
         "alvo": f"detrator (nps_score <= {LIMIAR_NOTA_DETRATOR})",

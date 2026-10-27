@@ -1,0 +1,24 @@
+{
+  "nome": "baseline_regressao_logistica",
+  "versao": "2.0.0",
+  "descricao": "Regressão logística (sem pesos por classe) que estima a probabilidade de o cliente ser detrator (nota_nps <= 6,5).",
+  "features": [
+    "delivery_delay_days",
+    "complaints_count",
+    "customer_service_contacts",
+    "resolution_time_days"
+  ],
+  "alvo": "detrator (nps_score <= 6.5)",
+  "limiar_decisao": 0.79,
+  "metricas_teste": {
+    "roc_auc": 0.8799,
+    "recall_detrator": 0.8152,
+    "precisao_detrator": 0.936,
+    "recall_nao_detrator": 0.7755
+  },
+  "linhas_treino": 2465,
+  "treinado_em": "2026-10-27T01:44:44+00:00",
+  "random_state": 42,
+  "python": "3.11.16",
+  "scikit_learn": "1.9.1"
+}
